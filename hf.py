@@ -1,8 +1,16 @@
+# Adapted from https://huggingface.co/blog/ray-tune
+import argparse
+
 from datasets import load_dataset, load_metric
 from dvclive.huggingface import DVCLiveCallback
+import ray
 from transformers import (AutoModelForSequenceClassification, AutoTokenizer,
                           Trainer, TrainingArguments)
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--address")
+args = parser.parse_args()
+ray.init(address=args.address)
 
 tokenizer = AutoTokenizer.from_pretrained('distilbert-base-uncased')
 dataset = load_dataset('glue', 'mrpc')
@@ -37,14 +45,21 @@ trainer = Trainer(
     model_init=model_init,
     compute_metrics=compute_metrics,
 )
-trainer.add_callback(DVCLiveCallback(save_dvc_exp=True))
+trainer.add_callback(DVCLiveCallback())
 
 # trainer.train()
 # Default objective is the sum of all metrics
 # when metrics are provided, so we have to maximize it.
-trainer.hyperparameter_search(
-    direction="maximize", 
-    backend="ray", 
-    n_trials=3, # number of trials
-    resources_per_trial={"cpu": 1, "gpu": 0},
-)
+if args.address:
+    trainer.hyperparameter_search(
+        direction="maximize", 
+        backend="ray", 
+        n_trials=3, # number of trials
+    )
+else:
+    trainer.hyperparameter_search(
+        direction="maximize", 
+        backend="ray", 
+        n_trials=3, # number of trials
+        resources_per_trial={"cpu": 1, "gpu": 0},
+    )

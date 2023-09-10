@@ -1,0 +1,8 @@
+boto3
+ray[tune]
+transformers[torch]
+datasets
+scipy
+scikit-learn
+torch
+dvclive
