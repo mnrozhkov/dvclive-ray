@@ -12,3 +12,5 @@ available_node_types:
 head_node_type: head_node
 setup_commands: # Set up each node.
     - pip install ray transformers[torch] datasets scipy scikit-learn torch dvclive
+    - git clone https://github.com/dberenbaum/dvclive-ray.git
+    - cd dvclive-ray
